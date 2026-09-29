@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es-CO" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sustentación ANLA | Proyecto de Fortalecimiento IDEAM & LAM3941</title>
+  
+  <!-- Tipografía Ejecutiva Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS (Local con Fallback CDN) -->
+  <script src="lib/tailwindcss.js"></script>
+  <script>if (!window.tailwind) document.write('<script src="https://cdn.tailwindcss.com"><\/script>');</script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0A2540',
+              dark: '#061325',
+              card: '#0D2D4E',
+              border: '#1E3E62',
+              emerald: '#10B981',
+              emeraldDark: '#065F46',
+              cyan: '#06B6D4',
+              amber: '#F59E0B',
+              slate: '#64748B',
+              muted: '#94A3B8'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'flow': 'flow 2s linear infinite'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js (Local con Fallback CDN) -->
+  <script src="lib/chart.umd.js"></script>
+  <script>if (!window.Chart) document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');</script>
+  
+  <!-- Lucide Icons (Local con Fallback CDN) -->
+  <script src="lib/lucide.min.js"></script>
+  <script>if (!window.lucide) document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');</script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #040D1A;
+      color: #E2E8F0;
+      overflow-x: hidden;
+      user-select: none;
+    }
+    
+    .font-display {
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    .glass-card {
+      background: rgba(13, 45, 78, 0.65);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(30, 62, 98, 0.8);
+      box-shadow: 0 12px 30px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 16px 36px 0 rgba(16, 185, 129, 0.15);
+    }
+
+    /* SVG Flow Animation */
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -40;
+      }
+    }
+    .animated-wire {
+      stroke-dasharray: 8 6;
+      animation: dash 1.5s linear infinite;
+    }
+
+    /* Radar pulse */
+    @keyframes radar {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(3.2); opacity: 0; }
+    }
+    .radar-pulse {
+      animation: radar 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    /* Progress Ring Animation */
+    .progress-ring__circle {
+      transition: stroke-dashoffset 0.1s linear;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #061325;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E3E62;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10B981;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- ==============================================================================
+       BARRA SUPERIOR EJECUTIVA (NAVBAR INSTITUCIONAL)
+  ============================================================================== -->
+  <header class="w-full bg-[#071629]/90 border-b border-brand-border/60 sticky top-0 z-50 backdrop-blur-md px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="bg-gradient-to-r from-blue-700 to-indigo-900 text-white font-display font-extrabold px-3 py-1.5 rounded-lg text-sm tracking-wider shadow-md border border-blue-500/30">
+          FRONTERA ENERGY
+        </span>
+        <span class="text-xs px-2.5 py-1 rounded bg-brand-border/50 text-slate-300 font-mono border border-slate-700/50">
+          EXP. LAM3941 • CASTOR A y B
+        </span>
+      </div>
+      <div class="h-5 w-[1px] bg-slate-700 hidden md:block"></div>
+      <div class="hidden lg:flex items-center gap-2 text-xs text-brand-muted">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <span>Sustentación Oficial ante la ANLA (Inversión 1% - Art. 321 Ley 1955/2019)</span>
+      </div>
+    </div>
+
+    <!-- Navegación & Controles de Presentación -->
+    <div class="flex items-center gap-3">
+      <!-- Indicadores de Paso (Pills) -->
+      <div class="flex items-center bg-[#051120] p-1 rounded-xl border border-brand-border/70 text-xs">
+        <button onclick="goToScene(0)" id="step-btn-0" class="step-btn px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 bg-emerald-500 text-slate-950 font-semibold shadow">
+          <span>1. Convenio IDEAM</span>
+        </button>
+        <button onclick="goToScene(1)" id="step-btn-1" class="step-btn px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+          <span>2. Inversión Castor A&B</span>
+        </button>
+        <button onclick="goToScene(2)" id="step-btn-2" class="step-btn px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white flex items-center gap-1.5">
+          <span>3. Sostenibilidad & ANLA</span>
+        </button>
+      </div>
+
+      <!-- Control de Temporizador / Autoplay -->
+      <div class="flex items-center gap-2 bg-[#051120] px-3 py-1.5 rounded-xl border border-brand-border/70">
+        <button id="toggle-play-btn" onclick="toggleAutoplay()" title="Pausar / Reanudar reproducción automática" class="text-slate-300 hover:text-emerald-400 transition-colors p-1">
+          <i data-lucide="pause" id="play-icon" class="w-4 h-4"></i>
+        </button>
+        
+        <!-- Anillo de Cuenta Regresiva SVG -->
+        <div class="relative w-6 h-6 flex items-center justify-center">
+          <svg class="w-6 h-6 transform -rotate-90">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" class="text-slate-800" fill="transparent" />
+            <circle id="timer-ring" cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" class="text-emerald-400 progress-ring__circle" stroke-dasharray="56.54" stroke-dashoffset="0" fill="transparent" />
+          </svg>
+          <span id="timer-text" class="absolute text-[9px] font-mono text-slate-300 font-bold">15</span>
+        </div>
+
+        <!-- Botones Prev / Next -->
+        <div class="flex items-center gap-1 ml-1 border-l border-slate-700 pl-2">
+          <button onclick="prevScene()" title="Diapositiva Anterior (Tecla Flecha Izq)" class="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <button onclick="nextScene()" title="Siguiente Diapositiva (Tecla Flecha Der)" class="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pantalla Completa & Audio -->
+      <div class="flex items-center gap-1.5">
+        <button id="audio-btn" onclick="toggleAudio()" title="Activar / Desactivar Sonido" class="p-2 bg-[#051120] border border-brand-border/70 rounded-xl text-slate-400 hover:text-emerald-400 transition-colors">
+          <i data-lucide="volume-2" id="audio-icon" class="w-4 h-4"></i>
+        </button>
+        <button onclick="toggleFullScreen()" title="Modo Pantalla Completa (F)" class="p-2 bg-[#051120] border border-brand-border/70 rounded-xl text-slate-400 hover:text-white transition-colors">
+          <i data-lucide="maximize" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==============================================================================
+       ESCENARIO PRINCIPAL (CONTENEDOR WIDESCREEN 16:9 INTERACTIVO)
+  ============================================================================== -->
+  <main class="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+    <!-- ============================================================================
+         ESCENA 1: ESTRATEGIA NACIONAL DE FORTALECIMIENTO HIDROMETEOROLÓGICO IDEAM
+    ============================================================================ -->
+    <section id="scene-0" class="scene transition-all duration-500 block">
+      
+      <!-- Cabecera de Escena -->
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-3 border-b border-brand-border/40 pb-4">
+        <div>
+          <div class="flex items-center gap-2 text-emerald-400 text-xs font-semibold tracking-wider uppercase mb-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>Escena 1 de 3 • Marco General Nacional</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-display font-extrabold text-white tracking-tight">
+            Estrategia Nacional de Fortalecimiento Hidrometeorológico – Convenio IDEAM
+          </h1>
+          <p class="text-sm text-slate-300 mt-1 max-w-4xl">
+            Proyecto sombrilla nacional que articula <strong class="text-white">17 expedientes de licenciamiento ambiental</strong> para robustecer la gobernanza hídrica, la calibración de sensores y la red nacional de monitoreo del IDEAM (<span class="text-emerald-300 font-mono">Decreto 2099 de 2016, Art. 2.2.9.3.1.9</span>).
+          </p>
+        </div>
+
+        <!-- Badge Valor Total Sombrilla -->
+        <div class="glass-card px-5 py-3 rounded-2xl flex items-center gap-4 border border-emerald-500/30 bg-emerald-950/20">
+          <div class="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <i data-lucide="layers" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Monto Total Sombrilla Articulado</div>
+            <div class="text-xl md:text-2xl font-display font-extrabold text-white font-mono" id="counter-total-sombrilla">
+              $17.743.626.078,86 COP
+            </div>
+            <div class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
+              <i data-lucide="check-circle-2" class="w-3 h-3"></i> 17 Expedientes en Co-financiación Oficial
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula Principal Escena 1: Gráfico + 4 Tarjetas de Objetivos -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <!-- Panel Izquierdo: Gráfico de Distribución Presupuestal -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-display font-bold text-white text-base flex items-center gap-2">
+              <i data-lucide="pie-chart" class="w-4 h-4 text-emerald-400"></i>
+              Distribución Estratégica por Objetivos
+            </h2>
+            <span class="text-xs text-brand-muted font-mono bg-brand-navy/60 px-2 py-0.5 rounded border border-slate-700">
+              100% Asignado
+            </span>
+          </div>
+          
+          <div class="relative h-64 w-full flex items-center justify-center my-auto">
+            <canvas id="chart-ideam-distribution"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-xs font-semibold text-slate-400 uppercase">Total Bolsa</span>
+              <span class="text-lg font-display font-extrabold text-white font-mono">$17.743M</span>
+              <span class="text-[10px] text-emerald-400">4 Objetivos</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-brand-border/60 text-[11px]">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              <span class="text-slate-300">Obj 3: Túnel & CCIMH (65,2%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span class="text-slate-300">Obj 2: Estaciones (18,6%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+              <span class="text-slate-300">Obj 1: Conocimiento (10,1%)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+              <span class="text-slate-300 font-bold text-white">Obj 4: Calibración (6,0%) ★</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Derecho: 4 Tarjetas de Objetivos Estratégicos -->
+        <div class="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Objetivo 1 -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 flex flex-col justify-between border-l-4 border-l-amber-500">
+            <div>
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span class="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="users" class="w-3.5 h-3.5"></i> Objetivo 1
+                </span>
+                <span class="font-mono text-slate-300 font-semibold">$1.800,0M COP</span>
+              </div>
+              <h3 class="text-sm font-display font-bold text-white mt-1">Democratización y Transferencia del Conocimiento</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Estrategia de fortalecimiento comunitario a través de talleres presenciales, ciencia ciudadana, formación de redes hidrometeorológicas locales y divulgación técnico-social de cuenca.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Participación LAM3941:</span>
+              <span class="text-amber-300 font-mono font-bold">$5.310.619 COP (Talleres & Cierre)</span>
+            </div>
+          </div>
+
+          <!-- Objetivo 2 -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 flex flex-col justify-between border-l-4 border-l-emerald-500">
+            <div>
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span class="font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="radio" class="w-3.5 h-3.5"></i> Objetivo 2
+                </span>
+                <span class="font-mono text-slate-300 font-semibold">$3.298,2M COP</span>
+              </div>
+              <h3 class="text-sm font-display font-bold text-white mt-1">Modernización e Instalación de Estaciones</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Adquisición, equipamiento, obra civil e instalación de estaciones hidrométricas y meteorológicas automáticas con transmisión satelital directa al centro de alertas del IDEAM.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Impacto Nacional:</span>
+              <span class="text-emerald-300 font-mono font-bold">Red Hidrológica Orinoquía y Caribe</span>
+            </div>
+          </div>
+
+          <!-- Objetivo 3 -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 flex flex-col justify-between border-l-4 border-l-cyan-500">
+            <div>
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span class="font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="wind" class="w-3.5 h-3.5"></i> Objetivo 3
+                </span>
+                <span class="font-mono text-slate-300 font-semibold">$11.577,9M COP</span>
+              </div>
+              <h3 class="text-sm font-display font-bold text-white mt-1">Centro CCIMH & Túnel del Viento Nacional</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Construcción y dotación del Centro de Calibración e Instrumentación Meteorológica e Hidrológica (CCIMH) en Bogotá, incluyendo la joya metrológica del Túnel del Viento de referencia latinoamericana.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-700/50 flex items-center justify-between text-[11px]">
+              <span class="text-slate-400">Capacidad Técnica:</span>
+              <span class="text-cyan-300 font-mono font-bold">Calibración Anemómetros Clase A</span>
+            </div>
+          </div>
+
+          <!-- Objetivo 4 (Destino Castor A&B) -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 flex flex-col justify-between border-l-4 border-l-indigo-500 bg-gradient-to-br from-indigo-950/40 to-brand-card">
+            <div>
+              <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+                <span class="font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Objetivo 4 ★
+                </span>
+                <span class="font-mono text-indigo-200 font-semibold">$1.067,5M COP</span>
+              </div>
+              <h3 class="text-sm font-display font-bold text-white mt-1">Equipamiento para Calibración Instrumental</h3>
+              <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Dotación de cámaras de presión barométrica, cámaras climáticas de temperatura/humedad y patrones de alta exactitud para calibrar sensores que operan en las cuencas del país.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-indigo-700/50 flex items-center justify-between text-[11px] bg-indigo-900/30 p-1.5 rounded-lg">
+              <span class="text-indigo-200 font-bold flex items-center gap-1">
+                <i data-lucide="target" class="w-3.5 h-3.5 text-emerald-400"></i> Foco Castor A&B (90%):
+              </span>
+              <span class="text-emerald-300 font-mono font-bold">$47.314.759 COP (Cámara Barométrica)</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         ESCENA 2: ¿DÓNDE Y CÓMO ENTRA LA INVERSIÓN DE CASTOR A Y B (LAM3941)?
+    ============================================================================ -->
+    <section id="scene-1" class="scene transition-all duration-500 hidden">
+      
+      <!-- Cabecera de Escena -->
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-3 border-b border-brand-border/40 pb-4">
+        <div>
+          <div class="flex items-center gap-2 text-cyan-400 text-xs font-semibold tracking-wider uppercase mb-1">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            <span>Escena 2 de 3 • Asignación Presupuestal Específica</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-display font-extrabold text-white tracking-tight">
+            Asignación Presupuestal y Destinación Específica – Expediente LAM3941
+          </h1>
+          <p class="text-sm text-slate-300 mt-1 max-w-4xl">
+            Trazabilidad matemática y financiera del aporte de Frontera Energy para el proyecto Castor A y B. Liquidación oficial en firme con imputación directa y verificable en los componentes del IDEAM.
+          </p>
+        </div>
+
+        <!-- Badge Aporte Total Castor -->
+        <div class="glass-card px-5 py-3 rounded-2xl flex items-center gap-4 border border-cyan-500/30 bg-cyan-950/20">
+          <div class="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400">
+            <i data-lucide="wallet" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Aporte Castor A&B (LAM3941)</div>
+            <div class="text-xl md:text-2xl font-display font-extrabold text-white font-mono" id="counter-castor-total">
+              $50.102.833,01 COP
+            </div>
+            <div class="text-[10px] text-cyan-300 flex items-center gap-1 mt-0.5">
+              <i data-lucide="check" class="w-3 h-3"></i> Aceptación IDEAM Rad. 20251000094741
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagrama de Flujo de Recursos Interactivo (Capital Flow Diagram) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        
+        <!-- Tarjeta Origen (Castor A y B) -->
+        <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between border-t-4 border-t-blue-500">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono font-bold text-blue-400 uppercase bg-blue-950/60 px-2.5 py-1 rounded border border-blue-800">
+                Punto de Origen
+              </span>
+              <span class="text-xs text-slate-400">Exp. LAM3941</span>
+            </div>
+            
+            <h3 class="text-lg font-display font-bold text-white mb-2">Bolsa Líquida Castor A y B</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+              Tras el reconocimiento previo de $35,6M en el Convenio SENA 053/2008 (Res. 2062/2021), el saldo deudor remanente se destinó íntegramente a las obligaciones estratégicas del IDEAM mediante radicación de Julio de 2026.
+            </p>
+
+            <div class="space-y-2 font-mono text-xs">
+              <div class="flex justify-between p-2 rounded bg-slate-900/60 border border-slate-800">
+                <span class="text-slate-400">Obligación Aprobada:</span>
+                <span class="text-white font-bold">$84.548.010,50 COP</span>
+              </div>
+              <div class="flex justify-between p-2 rounded bg-slate-900/60 border border-slate-800">
+                <span class="text-slate-400">Ejecutado Previo SENA:</span>
+                <span class="text-emerald-400 font-bold">$35.609.588,50 COP</span>
+              </div>
+              <div class="flex justify-between p-2 rounded bg-blue-950/60 border border-blue-500/40">
+                <span class="text-blue-300 font-bold">Asignado al IDEAM:</span>
+                <span class="text-cyan-300 font-bold">$50.102.833,01 COP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-700/60 text-center">
+            <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+              <i data-lucide="arrow-down-right" class="w-4 h-4 animate-bounce"></i> Flujo 100% Comprometido y Trazable
+            </span>
+          </div>
+        </div>
+
+        <!-- Conector Central SVG Animado (Desktop) -->
+        <div class="hidden lg:flex lg:col-span-1 items-center justify-center relative">
+          <svg class="w-full h-80" viewBox="0 0 100 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Línea Superior hacia Rama A (90%) -->
+            <path d="M 0 150 C 50 150, 50 70, 100 70" stroke="#3B82F6" stroke-width="4" fill="transparent" class="animated-wire" />
+            <!-- Línea Inferior hacia Rama B (10%) -->
+            <path d="M 0 150 C 50 150, 50 230, 100 230" stroke="#F59E0B" stroke-width="3" fill="transparent" class="animated-wire" />
+            
+            <!-- Nódulo central -->
+            <circle cx="0" cy="150" r="7" fill="#0A2540" stroke="#38BDF8" stroke-width="3" />
+            <circle cx="100" cy="70" r="6" fill="#0A2540" stroke="#10B981" stroke-width="3" />
+            <circle cx="100" cy="230" r="6" fill="#0A2540" stroke="#F59E0B" stroke-width="3" />
+          </svg>
+        </div>
+
+        <!-- Tarjetas Destino (Rama A y Rama B) -->
+        <div class="lg:col-span-7 flex flex-col justify-between gap-4">
+          
+          <!-- Rama A: Objetivo 4 (90% de la inversión) -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-l-emerald-400 bg-gradient-to-r from-emerald-950/20 via-brand-card to-brand-card relative overflow-hidden">
+            <div class="absolute top-3 right-4 bg-emerald-500/20 text-emerald-300 font-mono font-bold text-xs px-2.5 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
+              <i data-lucide="zap" class="w-3.5 h-3.5"></i> 94,4% DEL SALDO
+            </div>
+
+            <div class="flex items-center gap-3 mb-2">
+              <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                <i data-lucide="cpu" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-xs font-mono text-emerald-400 uppercase font-bold tracking-wider">RAMA A • DESTINACIÓN DIRECTA OBJETIVO 4</span>
+                <h4 class="text-base font-display font-bold text-white">Adquisición de la CÁMARA BAROMÉTRICA IDEAM</h4>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 my-3">
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <span class="text-[11px] text-slate-400 block">Monto Específico:</span>
+                <span class="text-sm font-mono font-bold text-emerald-300">$47.314.759,01 COP</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <span class="text-[11px] text-slate-400 block">Soporte Técnico:</span>
+                <span class="text-xs font-semibold text-slate-200">Doc. Técnico IDEAM_VF</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <span class="text-[11px] text-slate-400 block">Custodia Oficial:</span>
+                <span class="text-xs font-semibold text-slate-200">Laboratorio Metrología IDEAM</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Equipo de alta precisión indispensable para contrastar, calibrar y certificar los sensores de presión atmosférica de todas las estaciones hidrometeorológicas del territorio nacional, eliminando sesgos en modelos de cuenca.
+            </p>
+          </div>
+
+          <!-- Rama B: Objetivo 1 (Democratización y Talleres) -->
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-400 bg-gradient-to-r from-amber-950/20 via-brand-card to-brand-card relative overflow-hidden">
+            <div class="absolute top-3 right-4 bg-amber-500/20 text-amber-300 font-mono font-bold text-xs px-2.5 py-1 rounded-full border border-amber-500/30 flex items-center gap-1">
+              <i data-lucide="users" class="w-3.5 h-3.5"></i> 5,6% DEL SALDO
+            </div>
+
+            <div class="flex items-center gap-3 mb-2">
+              <div class="p-2 rounded-xl bg-amber-500/20 text-amber-400">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <span class="text-xs font-mono text-amber-400 uppercase font-bold tracking-wider">RAMA B • DESTINACIÓN DIRECTA OBJETIVO 1</span>
+                <h4 class="text-base font-display font-bold text-white">Democratización de la Información y Talleres de Cierre</h4>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 my-3">
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <span class="text-[11px] text-slate-400 block">Obj. 1 Capacitaciones Locales:</span>
+                <span class="text-sm font-mono font-bold text-amber-300">$2.522.544,00 COP</span>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                <span class="text-[11px] text-slate-400 block">Taller de Cierre Técnico-Social:</span>
+                <span class="text-sm font-mono font-bold text-amber-300">$265.530,00 COP</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+              Jornadas de apropiación social del conocimiento hídrico con comunidades locales y veedurías ciudadanas en la cuenca de influencia de Castor A y B para socializar los resultados del monitoreo continuo.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================================
+         ESCENA 3: IMPACTO TERRITORIAL Y SUSTENTO LEGAL ANTE LA ANLA
+    ============================================================================ -->
+    <section id="scene-2" class="scene transition-all duration-500 hidden">
+      
+      <!-- Cabecera de Escena -->
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-3 border-b border-brand-border/40 pb-4">
+        <div>
+          <div class="flex items-center gap-2 text-indigo-400 text-xs font-semibold tracking-wider uppercase mb-1">
+            <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+            <span>Escena 3 de 3 • Viabilidad Jurídica & Territorial</span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-display font-extrabold text-white tracking-tight">
+            Sostenibilidad, Ámbito Geográfico y Viabilidad Jurídica ANLA
+          </h1>
+          <p class="text-sm text-slate-300 mt-1 max-w-4xl">
+            Solidez técnica y jurídica que garantiza a la Autoridad Ambiental el cierre formal de la obligación del 1% bajo la transición normativa legal y sin mezclas con las compensaciones bióticas.
+          </p>
+        </div>
+
+        <!-- Badge Estado Jurídico -->
+        <div class="glass-card px-5 py-3 rounded-2xl flex items-center gap-4 border border-indigo-500/30 bg-indigo-950/20">
+          <div class="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400">
+            <i data-lucide="scale" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Estatus Regulatorio ANLA</div>
+            <div class="text-lg md:text-xl font-display font-extrabold text-white">
+              CUMPLIMIENTO EN FIRME
+            </div>
+            <div class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
+              <i data-lucide="check-check" class="w-3 h-3"></i> Radicado Formal en Julio de 2026
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Los 3 Pilares Técnicos + Mapa Esquemático de Cuencas -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        
+        <!-- Columna Izquierda: Los 3 Pilares -->
+        <div class="lg:col-span-7 flex flex-col justify-between gap-4">
+          
+          <!-- Pilar 1: Ámbito Geográfico -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 border-l-4 border-l-cyan-400">
+            <div class="flex items-start gap-3">
+              <div class="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-300 mt-1">
+                <i data-lucide="map-pin" class="w-5 h-5"></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-display font-bold text-white">1. Ámbito Geográfico y Cuencas Beneficiadas</h3>
+                  <span class="text-[11px] font-mono bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">
+                    Jurisdicción Corporinoquia
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Focalización hidrológica directa en la <strong class="text-white">Subzona Hidrográfica del Caño Guanápalo</strong>, directos al <strong class="text-white">Río Meta</strong> y conectividad con la cuenca del <strong class="text-white">Río Pauto (IDEAM 3503)</strong>, garantizando que el fortalecimiento instrumental impacte la misma macrocuenca de captación del proyecto Castor.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pilar 2: Sostenibilidad Asegurada -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 border-l-4 border-l-emerald-400">
+            <div class="flex items-start gap-3">
+              <div class="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 mt-1">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-display font-bold text-white">2. Sostenibilidad Institucional Permanente</h3>
+                  <span class="text-[11px] font-mono bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
+                    Custodia Estatal
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  El <strong class="text-white">IDEAM asume formalmente la custodia patrimonial</strong>, calibración metrológica (CMC acreditada), operación continua y mantenimiento preventivo/correctivo del instrumental adquirido por Frontera, asegurando vida útil superior a 15 años sin dependencia de terceros.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pilar 3: Cumplimiento Normativo -->
+          <div class="glass-card glass-card-hover rounded-2xl p-4 border-l-4 border-l-indigo-400">
+            <div class="flex items-start gap-3">
+              <div class="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-300 mt-1">
+                <i data-lucide="file-check-2" class="w-5 h-5"></i>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-display font-bold text-white">3. Viabilidad Jurídica & Transición Normativa</h3>
+                  <span class="text-[11px] font-mono bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-800">
+                    Art. 321 Ley 1955/2019
+                  </span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                  Acogimiento expreso al régimen de transición del Plan Nacional de Desarrollo, Decreto 2099 de 2016 y radicación del <strong class="text-white">Documento Técnico IDEAM_VF en Julio de 2026</strong>. Estructuración técnica que habilita a la ANLA a declarar el cumplimiento definitivo de la obligación.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Mapa Esquemático de Cuencas e Interacción SVG -->
+        <div class="lg:col-span-5 glass-card rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display font-bold text-white text-sm flex items-center gap-2">
+              <i data-lucide="map" class="w-4 h-4 text-emerald-400"></i>
+              Mapa Esquemático de Cuencas e Impacto
+            </h3>
+            <span class="text-[11px] text-slate-400 font-mono">Paz de Ariporo & San Luis</span>
+          </div>
+
+          <!-- SVG Interactivo del Mapa Territorial -->
+          <div class="relative w-full h-64 bg-[#061426] rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center p-3">
+            <svg viewBox="0 0 400 240" class="w-full h-full">
+              <!-- Fondo de Cuencas Hidrográficas (Curvas Suaves) -->
+              <path d="M 10 180 Q 120 160 200 190 T 390 140" stroke="#0E3A66" stroke-width="28" fill="none" opacity="0.4" />
+              <path d="M 30 50 Q 160 90 240 60 T 380 90" stroke="#0E3A66" stroke-width="18" fill="none" opacity="0.3" />
+              <path d="M 150 20 Q 180 120 220 220" stroke="#1D4ED8" stroke-width="12" fill="none" opacity="0.5" />
+
+              <!-- Río Meta (Eje Principal) -->
+              <path d="M 0 200 Q 150 180 260 210 T 400 170" stroke="#38BDF8" stroke-width="4" fill="none" stroke-linecap="round" />
+              <text x="310" y="160" fill="#7DD3FC" font-size="9" font-family="Inter" font-weight="bold">Río Meta</text>
+
+              <!-- Caño Guanapalo (Afluente Castor) -->
+              <path d="M 60 70 Q 120 110 180 185" stroke="#34D399" stroke-width="3" fill="none" class="animated-wire" />
+              <text x="65" y="65" fill="#6EE7B7" font-size="9" font-family="Inter" font-weight="bold">Caño Guanápalo</text>
+
+              <!-- Río Pauto -->
+              <path d="M 230 40 Q 250 110 270 205" stroke="#818CF8" stroke-width="2.5" fill="none" />
+              <text x="240" y="35" fill="#A5B4FC" font-size="9" font-family="Inter" font-weight="bold">Río Pauto (3503)</text>
+
+              <!-- Puntos Clave de Monitoreo con Radar -->
+              <!-- Punto 1: Locación Castor A&B -->
+              <g transform="translate(130, 130)">
+                <circle cx="0" cy="0" r="10" fill="#3B82F6" class="radar-pulse" opacity="0.7"/>
+                <circle cx="0" cy="0" r="4.5" fill="#60A5FA"/>
+                <text x="8" y="4" fill="#FFFFFF" font-size="8.5" font-family="Inter" font-weight="bold">Castor A&B (LAM3941)</text>
+              </g>
+
+              <!-- Punto 2: Estación Guanapalo / RNSC Montana -->
+              <g transform="translate(170, 175)">
+                <circle cx="0" cy="0" r="10" fill="#10B981" class="radar-pulse" opacity="0.7"/>
+                <circle cx="0" cy="0" r="4.5" fill="#34D399"/>
+                <text x="8" y="4" fill="#6EE7B7" font-size="8" font-family="Inter">RNSC Montana (Comp. Biótica)</text>
+              </g>
+
+              <!-- Punto 3: Conexión CCIMH Bogotá -->
+              <g transform="translate(45, 195)">
+                <rect x="-4" y="-4" width="8" height="8" fill="#F59E0B" transform="rotate(45)"/>
+                <text x="8" y="4" fill="#FCD34D" font-size="8" font-family="Inter" font-weight="bold">Sede CCIMH (Bogotá)</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Leyenda del Mapa -->
+          <div class="flex items-center justify-between text-[11px] text-slate-400 mt-2 pt-2 border-t border-slate-800">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> Cuenca Hidrológica</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Estación Calibrada</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 bg-amber-400 rotate-45"></span> Patrón Metrológico</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BANNER DE ORO INSTITUCIONAL: CERO MEZCLA -->
+      <div class="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 border-2 border-emerald-500/40 shadow-xl flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3">
+          <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <i data-lucide="check-shield" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-[11px] font-mono text-emerald-300 font-bold uppercase tracking-wider">
+              PRINCIPIO DE INDEPENDENCIA JURÍDICA Y TÉCNICA
+            </div>
+            <div class="text-sm md:text-base font-display font-extrabold text-white">
+              CERO MEZCLA: Recurso del 1% totalmente independiente de la Compensación Biótica
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-300 font-mono bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-700">
+          <span>RNSC Montana (3,103 ha)</span>
+          <span class="text-slate-600">•</span>
+          <span>Escuela El Morichal (1,00 ha)</span>
+          <span class="text-slate-600">•</span>
+          <span class="text-emerald-400 font-bold">1% IDEAM ($50,1M)</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==============================================================================
+       BARRA INFERIOR DE TRAZABILIDAD & ATAJOS
+  ============================================================================== -->
+  <footer class="w-full bg-[#05101E] border-t border-brand-border/40 px-6 py-2.5 flex items-center justify-between text-xs text-slate-400">
+    <div class="flex items-center gap-3">
+      <span class="font-semibold text-slate-300">Frontera Energy Colombia Corp.</span>
+      <span>•</span>
+      <span>Expediente ANLA LAM3941</span>
+      <span class="hidden md:inline">•</span>
+      <span class="hidden md:inline">Resolución 2062/2021 & Auto 007506/2025</span>
+    </div>
+    <div class="flex items-center gap-3 font-mono text-[11px]">
+      <span class="text-slate-500">Atajos: [← / →] Cambiar Diapositiva • [Espacio] Pausa • [F] Pantalla Completa</span>
+      <span class="text-emerald-400 font-semibold">● Sistema Conectado</span>
+    </div>
+  </footer>
+
+  <!-- ==============================================================================
+       LÓGICA JAVASCRIPT: NAVEGACIÓN, TEMPORIZADOR, CHART.JS Y AUDIO
+  ============================================================================== -->
+  <script>
+    // Inicializar Iconos Lucide
+    lucide.createIcons();
+
+    // Estado de la Presentación
+    let currentScene = 0;
+    const totalScenes = 3;
+    const sceneDuration = 16; // segundos por escena
+    let timeLeft = sceneDuration;
+    let timerInterval = null;
+    let isPlaying = true;
+    let audioEnabled = true;
+
+    // Elementos DOM
+    const scenes = [
+      document.getElementById('scene-0'),
+      document.getElementById('scene-1'),
+      document.getElementById('scene-2')
+    ];
+    const timerRing = document.getElementById('timer-ring');
+    const timerText = document.getElementById('timer-text');
+    const playIcon = document.getElementById('play-icon');
+    const audioIcon = document.getElementById('audio-icon');
+
+    // Circunferencia del anillo SVG (radio 9) => 2 * PI * 9 ≈ 56.548
+    const circumference = 56.548;
+    timerRing.style.strokeDasharray = `${circumference} ${circumference}`;
+
+    // Web Audio API para efectos de sonido elegantes sin archivos externos
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playTone(freq = 440, type = 'sine', duration = 0.15) {
+      if (!audioEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.warn('Audio contextual bloqueado', e);
+      }
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      audioIcon.setAttribute('data-lucide', audioEnabled ? 'volume-2' : 'volume-x');
+      lucide.createIcons();
+      if (audioEnabled) playTone(587.33, 'triangle', 0.2); // D5 chime
+    }
+
+    // Inicializar Gráfica de Distribución de IDEAM (Chart.js)
+    let ideamChart = null;
+    function initChart() {
+      const ctx = document.getElementById('chart-ideam-distribution').getContext('2d');
+      ideamChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [
+            'Obj 3: Túnel & CCIMH',
+            'Obj 2: Estaciones Hidrometeorológicas',
+            'Obj 1: Democratización del Conocimiento',
+            'Obj 4: Calibración Instrumental (Castor A&B)'
+          ],
+          datasets: [{
+            data: [11577.9, 3298.2, 1800.0, 1067.5],
+            backgroundColor: [
+              '#06B6D4', // Cyan
+              '#10B981', // Emerald
+              '#F59E0B', // Amber
+              '#6366F1'  // Indigo (Castor A&B)
+            ],
+            borderColor: '#061325',
+            borderWidth: 3,
+            hoverOffset: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const val = context.raw;
+                  return ` COP $${val.toLocaleString('es-CO')}M (${context.label})`;
+                }
+              }
+            }
+          },
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 1200
+          }
+        }
+      });
+    }
+
+    // Navegación entre Escenas
+    function goToScene(index) {
+      if (index < 0 || index >= totalScenes) return;
+      currentScene = index;
+      
+      // Ocultar y mostrar escenas
+      scenes.forEach((sec, idx) => {
+        if (idx === currentScene) {
+          sec.classList.remove('hidden');
+          setTimeout(() => sec.classList.remove('opacity-0'), 20);
+        } else {
+          sec.classList.add('hidden');
+        }
+      });
+
+      // Actualizar botones de navegación en Navbar
+      for (let i = 0; i < totalScenes; i++) {
+        const btn = document.getElementById(`step-btn-${i}`);
+        if (i === currentScene) {
+          btn.className = 'step-btn px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 bg-emerald-500 text-slate-950 font-semibold shadow';
+        } else {
+          btn.className = 'step-btn px-3 py-1.5 rounded-lg font-medium transition-all text-slate-400 hover:text-white flex items-center gap-1.5';
+        }
+      }
+
+      // Re-animar Chart si estamos en escena 0
+      if (currentScene === 0 && ideamChart) {
+        ideamChart.reset();
+        ideamChart.update();
+      }
+
+      // Resetear temporizador
+      timeLeft = sceneDuration;
+      updateTimerDisplay();
+      playTone(523.25 + (index * 70), 'sine', 0.12);
+    }
+
+    function nextScene() {
+      const next = (currentScene + 1) % totalScenes;
+      goToScene(next);
+    }
+
+    function prevScene() {
+      const prev = (currentScene - 1 + totalScenes) % totalScenes;
+      goToScene(prev);
+    }
+
+    // Manejador del Temporizador
+    function updateTimerDisplay() {
+      timerText.innerText = Math.ceil(timeLeft);
+      const offset = circumference - (timeLeft / sceneDuration) * circumference;
+      timerRing.style.strokeDashoffset = offset;
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPlaying) return;
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          nextScene();
+        } else {
+          updateTimerDisplay();
+        }
+      }, 100);
+    }
+
+    function toggleAutoplay() {
+      isPlaying = !isPlaying;
+      playIcon.setAttribute('data-lucide', isPlaying ? 'pause' : 'play');
+      lucide.createIcons();
+      playTone(isPlaying ? 659.25 : 392.00, 'triangle', 0.15);
+    }
+
+    // Pantalla Completa
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // Atajos de Teclado
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextScene();
+      else if (e.key === 'ArrowLeft') prevScene();
+      else if (e.key === ' ') {
+        e.preventDefault();
+        toggleAutoplay();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullScreen();
+      }
+    });
+
+    // Inicialización al cargar la ventana
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      startTimer();
+      updateTimerDisplay();
+    });
+  </script>
+</body>
+</html>
